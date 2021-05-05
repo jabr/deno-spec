@@ -14,28 +14,32 @@ class Description {
     constructor(
         name: string = '',
         parent: Description | undefined = undefined
-    ) {}
+    ) {
+        this.name = name
+        this.parent = parent
+    }
 
     declareTests() {
         let namePrefix = this.nestedNames().join(' / ')
+        // console.log(this, namePrefix)
         this.tests.forEach(options => {
             let { name, fn } = options
             Deno.test({
                 ...options,
                 name: `${namePrefix} - ${name}`,
-                fn: () => {
+                fn: async () => {
                     let ctx = {}
-                    this.runTasks('before', ctx)
-                    fn(ctx)
-                    this.runTasks('after', ctx)
+                    await this.runTasks('before', ctx)
+                    await fn(ctx)
+                    await this.runTasks('after', ctx)
                 }
             })
         })
     }
 
-    runTasks(type: string, ctx: Context) : void {
-        this.parent?.runTasks(type, ctx)
-        this.tasks[type].forEach(task => task(ctx))
+    async runTasks(type: string, ctx: Context) : Promise<void> {
+        await this.parent?.runTasks(type, ctx)
+        this.tasks[type].forEach(async task => await task(ctx))
     }
 
     nestedNames() : string[] {
@@ -46,7 +50,9 @@ class Description {
 }
 
 export function describe(name: string, fn: () => void) {
+    // console.log(Description.current)
     Description.current = new Description(name, Description.current)
+    // console.log(Description.current)
     fn()
     Description.current.declareTests()
     Description.current = Description.current.parent || Description.current
