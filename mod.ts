@@ -1,19 +1,17 @@
 type Context = { [k: string]: any }
-type Voids = void | Promise<void>
-type Runnable = (ctx: Context) => Voids;
+type Runnable = (ctx: Context) => void | Promise<void>
+type OptionalDescription = Description | undefined
 
 class Description {
-    public name: string = ''
-    public parent: Description | undefined = undefined
-    public tasks: { [k: string]: Runnable[] } = {
-        before: [], after: []
-    }
+    public name: string
+    public parent: OptionalDescription
+    public tasks: { [k: string]: Runnable[] } = { before: [], after: [] }
     public tests: Context[] = []
-    static current: Description = new Description('$')
+    static current: OptionalDescription = undefined
 
     constructor(
         name: string = '',
-        parent: Description | undefined = undefined
+        parent: OptionalDescription = undefined
     ) {
         this.name = name
         this.parent = parent
@@ -21,12 +19,11 @@ class Description {
 
     declareTests() {
         let namePrefix = this.nestedNames().join(' / ')
-        // console.log(this, namePrefix)
         this.tests.forEach(options => {
             let { name, fn } = options
             Deno.test({
                 ...options,
-                name: `${namePrefix} - ${name}`,
+                name: `${namePrefix} // ${name}`,
                 fn: async () => {
                     let ctx = {}
                     await this.runTasks('before', ctx)
@@ -37,12 +34,12 @@ class Description {
         })
     }
 
-    async runTasks(type: string, ctx: Context) : Promise<void> {
+    async runTasks(type: string, ctx: Context): Promise<void> {
         await this.parent?.runTasks(type, ctx)
         this.tasks[type].forEach(async task => await task(ctx))
     }
 
-    nestedNames() : string[] {
+    nestedNames(): string[] {
         let names = this.parent?.nestedNames() || []
         names.push(this.name)
         return names
@@ -50,22 +47,30 @@ class Description {
 }
 
 export function describe(name: string, fn: () => void) {
-    // console.log(Description.current)
     Description.current = new Description(name, Description.current)
-    // console.log(Description.current)
     fn()
     Description.current.declareTests()
-    Description.current = Description.current.parent || Description.current
+    Description.current = Description.current.parent
+}
+
+function currentDescriptionOrThrow(name: string): Description {
+    if (!Description.current) throw Error(
+        `#${name} cannot be used outside of a #describe block`
+    )
+    return (Description.current as Description)
 }
 
 export function it(name: string, fn: Runnable, options = {}) {
-    Description.current.tests.push({ name, fn, ...options })
+    const description = currentDescriptionOrThrow('it')
+    description.tests.push({ name, fn, ...options })
 }
 
 export function before(fn: Runnable) {
-    Description.current.tasks.before.push(fn)
+    const description = currentDescriptionOrThrow('before')
+    description.tasks.before.push(fn)
 }
 
 export function after(fn: Runnable) {
-    Description.current.tasks.after.push(fn)
+    const description = currentDescriptionOrThrow('after')
+    description.tasks.after.push(fn)
 }

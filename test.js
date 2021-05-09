@@ -1,10 +1,12 @@
 import { describe, before, after, it } from "./mod.ts"
-import { assert, assertEquals, assertStrictEquals, unreachable }
-    from "https://deno.land/std/testing/asserts.ts"
-// import { deferred } from "https://deno.land/std/async/mod.ts"
+import {
+    assert, assertEquals, assertStrictEquals, assertThrows, unreachable
+} from "https://deno.land/std/testing/asserts.ts"
 
-it('it works', ctx => {
-    assert(true)
+[ it, before, after ].forEach(fn => {
+    const desc = `outside of a #describe block // #${fn.name} throws an error`
+    const errMsg = `#${fn.name} cannot be used outside of a #describe block`
+    Deno.test(desc, () => assertThrows(fn, Error, errMsg))
 })
 
 describe('#describe', () => {
@@ -56,11 +58,19 @@ describe('#describe', () => {
 })
 
 describe('#it', () => {
+    // @todo: better way to test this?
     it('supports the `ignore` option', ctx => {
         unreachable()
     }, { ignore: true })
 
-    // @todo
-    // it('supports the `only` option', ctx => {
-    // }, { only: true })
+    // @todo: how to test as part of a normal run?
+    // describe('with the `only` option', () => {
+    //     it('only runs those tests', ctx => {
+    //         assert(true)
+    //     }, { only: true })
+    //
+    //     it('does not run normal tests', ctx => {
+    //         unreachable()
+    //     })
+    // })
 })
