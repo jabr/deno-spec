@@ -1,3 +1,5 @@
+import { dim, cyan } from "https://deno.land/std/fmt/colors.ts"
+
 type Context = { [k: string]: any }
 type Runnable = (ctx: Context) => void | Promise<void>
 type OptionalDescription = Description | undefined
@@ -19,11 +21,16 @@ class Description {
 
     declareTests() {
         let namePrefix = this.nestedNames().join(' / ')
+        let pendingSuffix = ` ${dim(`[${cyan('pending')}]`)}`
         this.tests.forEach(options => {
-            let { name, fn } = options
+            let { name, fn, pending } = options
+            let fullName = `${namePrefix} // ${name}`
+            if (!fn) pending = true
+            if (pending) fullName += pendingSuffix
             Deno.test({
                 ...options,
-                name: `${namePrefix} // ${name}`,
+                ignore: (options.ignore || pending),
+                name: fullName,
                 fn: async () => {
                     let ctx = {}
                     await this.runTasks('before', ctx)

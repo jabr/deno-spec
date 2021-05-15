@@ -37,6 +37,8 @@ describe('#describe', () => {
     })
 
     describe('with an #after block', () => {
+        // @todo: other ways to test the after block actually runs?
+
         describe('reseting a lexically scoped counter', () => {
             let counter = 0
 
@@ -52,25 +54,47 @@ describe('#describe', () => {
                 assertStrictEquals(counter++, 0)
             })
         })
+    })
 
-        // @todo: other ways to test the after block actually runs?
+    describe('using the #xdescribe shortcut', () => {
+        it('sets the `ignore` option as the default on contained tests')
+    })
+
+    describe('using the #fdescribe shortcut', () => {
+        it('sets the `only` option as the default on contained tests')
     })
 })
 
 describe('#it', () => {
+    describe('with no test function', () => {
+        it('creates a "pending" test (ignored with a note on the name)')
+    })
+
     // @todo: better way to test this?
     it('supports the `ignore` option', ctx => {
         unreachable()
     }, { ignore: true })
 
-    // @todo: how to test as part of a normal run?
-    // describe('with the `only` option', () => {
-    //     it('only runs those tests', ctx => {
-    //         assert(true)
-    //     }, { only: true })
-    //
-    //     it('does not run normal tests', ctx => {
-    //         unreachable()
-    //     })
-    // })
+    describe('using the #xit shortcut', () => {
+        it ('sets the `ignore` option')
+        it ('merges with other passed options')
+        it ('overrides a passsed `ignore` option')
+    })
+
+    // @todo: how to test "only" option as part of a suite run?
+    describe('with the `only` option', () => {
+        // it('only runs those tests', ctx => {
+        //     assert(true)
+        // }, { only: true })
+        //
+        // it('does not run normal tests', ctx => {
+        //     unreachable()
+        // })
+    })
+
+    describe('using the #fit shortcut', () => {
+        it ('sets the `only` option')
+        it ('merges with other passed options')
+        it ('overrides a passsed `only` option')
+    })
 })
