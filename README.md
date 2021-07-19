@@ -6,7 +6,7 @@ Provides a spec-like (`describe`, `it`, etc) testing framework on top of `Deno.t
 
 ```js
 import { describe, before, it } from "https://deno.land/x/spec/mod.ts"
-import { assertEquals } from "http://deno.land/std/testing/asserts.ts"
+import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
 describe("foo", () => {
     before(ctx => {

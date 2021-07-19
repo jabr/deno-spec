@@ -1,6 +1,7 @@
 import { describe, before, after, it } from "./mod.ts"
 import {
-    assert, assertEquals, assertStrictEquals, assertThrows, unreachable
+    assert, assertExists, assertEquals,
+    assertStrictEquals, assertThrows, unreachable
 } from "https://deno.land/std/testing/asserts.ts"
 
 [ it, before, after ].forEach(fn => {
@@ -33,6 +34,26 @@ describe('#describe', () => {
                 assertStrictEquals(ctx.item, -Infinity)
                 assertStrictEquals(ctx.other, 'forty-two')
             })
+        })
+    })
+
+    describe('with an async #before block', () => {
+        before(async ctx => {
+            ctx.immediate = 42
+            ctx.awaitedImmediate = await 50
+            ctx.awaitedResolvedPromise = await Promise.resolve(60)
+            ctx.awaitedQueuedPromise = await new Promise(resolve => {
+                queueMicrotask(() => resolve(99))
+            })
+            ctx.anotherImmediate = Infinity
+        })
+
+        it('runs tests after it completes', ctx => {
+            assertEquals(ctx.immediate, 42)
+            assertEquals(ctx.awaitedImmediate, 50)
+            assertEquals(ctx.awaitedResolvedPromise, 60)
+            assertEquals(ctx.awaitedQueuedPromise, 99)
+            assertEquals(ctx.anotherImmediate, Infinity)
         })
     })
 

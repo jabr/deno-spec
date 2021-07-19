@@ -43,7 +43,7 @@ class Description {
 
     async runTasks(type: string, ctx: Context): Promise<void> {
         await this.parent?.runTasks(type, ctx)
-        this.tasks[type].forEach(async task => await task(ctx))
+        for (const task of this.tasks[type]) await task(ctx)
     }
 
     nestedNames(): string[] {
