@@ -1,7 +1,8 @@
 import { describe, before, after, it } from "./mod.ts"
 import {
     assert, assertExists, assertEquals,
-    assertStrictEquals, assertThrows, unreachable
+    assertStrictEquals, assertThrows, assertThrowsAsync,
+    unreachable, AssertionError
 } from "https://deno.land/std/testing/asserts.ts"
 
 [ it, before, after ].forEach(fn => {
@@ -73,6 +74,34 @@ describe('#describe', () => {
 
             it('counter is zero despite previous increment', ctx => {
                 assertStrictEquals(counter++, 0)
+            })
+        })
+
+        describe('and an exception', () => {
+            const runner = fn => {
+                return async () => {
+                    await assertThrowsAsync(fn, AssertionError, '#after')
+                }
+            }
+
+            after(() => {
+                assert(false, 'error from #after')
+            })
+
+            describe('from a #before block', () => {
+                before(() => {
+                    assert(false, 'error from #before')
+                })
+
+                it('the #after block is still run', () => {
+                    assert(true)
+                }, { runner })
+            })
+
+            describe('in an #it block', () => {
+                it('the #after block is still run', () => {
+                    assert(false, 'error from #it')
+                }, { runner })
             })
         })
     })

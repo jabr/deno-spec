@@ -21,22 +21,29 @@ class Description {
     }
 
     declareTests() {
-        let namePrefix = this.nestedNames().join(' / ')
+        const namePrefix = this.nestedNames().join(' / ')
         this.tests.forEach(options => {
-            let { name, fn, pending } = options
+            let { name, fn, pending, runner } = options
             let fullName = `${namePrefix} // ${name}`
             if (!fn) pending = true
             if (pending) fullName += pendingSuffix
+
+            let fnWithTasks = async () => {
+                let ctx = {}
+                try {
+                    await this.runTasks('before', ctx)
+                    await fn(ctx)
+                } finally {
+                    await this.runTasks('after', ctx)
+                }
+            }
+            if (runner) fnWithTasks = runner(fnWithTasks)
+
             Deno.test({
                 ...options,
                 ignore: (options.ignore || pending),
                 name: fullName,
-                fn: async () => {
-                    let ctx = {}
-                    await this.runTasks('before', ctx)
-                    await fn(ctx)
-                    await this.runTasks('after', ctx)
-                }
+                fn: fnWithTasks
             })
         })
     }
