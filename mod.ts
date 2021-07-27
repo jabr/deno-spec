@@ -1,19 +1,20 @@
 import { dim, cyan } from "https://deno.land/std/fmt/colors.ts"
+const pendingSuffix = ` ${dim(`[${cyan('pending')}]`)}`
 
 type Context = { [k: string]: any }
 type Runnable = (ctx: Context) => void | Promise<void>
-type OptionalDescription = Description | undefined
 
+type Optional<V> = V | undefined
 class Description {
     public name: string
-    public parent: OptionalDescription
+    public parent: Optional<Description>
     public tasks: { [k: string]: Runnable[] } = { before: [], after: [] }
     public tests: Context[] = []
-    static current: OptionalDescription = undefined
+    static current: Optional<Description>
 
     constructor(
         name: string = '',
-        parent: OptionalDescription = undefined
+        parent?: Optional<Description>
     ) {
         this.name = name
         this.parent = parent
@@ -21,7 +22,6 @@ class Description {
 
     declareTests() {
         let namePrefix = this.nestedNames().join(' / ')
-        let pendingSuffix = ` ${dim(`[${cyan('pending')}]`)}`
         this.tests.forEach(options => {
             let { name, fn, pending } = options
             let fullName = `${namePrefix} // ${name}`
@@ -67,7 +67,7 @@ function currentDescriptionOrThrow(name: string): Description {
     return (Description.current as Description)
 }
 
-export function it(name: string, fn: Runnable, options = {}) {
+export function it(name: string, fn?: Optional<Runnable>, options = {}) {
     const description = currentDescriptionOrThrow('it')
     description.tests.push({ name, fn, ...options })
 }
