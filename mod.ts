@@ -1,8 +1,8 @@
 import { dim, cyan } from "https://deno.land/std/fmt/colors.ts"
 const pendingSuffix = ` ${dim(`[${cyan('pending')}]`)}`
 
-type Context = { [k: string]: any }
-type Runnable = (ctx: Context) => void | Promise<void>
+export type Context = { [k: string]: any }
+export type Runnable = (ctx: Context) => void | Promise<void>
 
 type Optional<V> = V | undefined
 class Description {
