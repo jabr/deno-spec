@@ -1,7 +1,7 @@
 import { describe, before, after, it } from "./mod.ts"
 import {
-    assert, assertExists, assertEquals,
-    assertStrictEquals, assertThrows, assertThrowsAsync,
+    assert, assertEquals, assertStrictEquals,
+    assertThrows, assertRejects,
     unreachable, AssertionError
 } from "https://deno.land/std/testing/asserts.ts"
 
@@ -80,7 +80,7 @@ describe('#describe', () => {
         describe('and an exception', () => {
             const runner = fn => {
                 return async () => {
-                    await assertThrowsAsync(fn, AssertionError, '#after')
+                    await assertRejects(fn, AssertionError, '#after')
                 }
             }
 
