@@ -1,6 +1,6 @@
 > **Warning**
 >
-> Deno now includes support for [Behavior-Driven Development](https://deno.land/manual/testing/behavior_driven_development) testing in its [standard library](https://deno.land/std/testing/bdd.ts).
+> Deno now includes support for [Behavior-Driven Development](https://docs.deno.com/runtime/manual/basics/testing/behavior_driven_development/) testing in its [standard library](https://deno.land/std/testing/bdd.ts).
 >
 > You should use that instead of this.
 
